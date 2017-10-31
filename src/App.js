@@ -32,33 +32,71 @@ class App extends Component {
   getVehicles() {
     // axios (GET)
     // setState with response -> vehiclesToDisplay
+    let promise = axios.get('https://joes-autos.herokuapp.com/api/vehicles')
+      promise.then(res => {
+        this.setState({
+          vehiclesToDisplay: res.data
+        })
+      })
   }
 
   getPotentialBuyers() {
     // axios (GET)
     // setState with response -> buyersToDisplay
+    let promise = axios.get('https://joes-autos.herokuapp.com/api/buyers')
+    promise.then(res => {
+      this.setState({
+        buyersToDisplay: res.data
+      })
+    })
   }
 
   sellCar(id) {
     // axios (DELETE)
     // setState with response -> vehiclesToDisplay
+    let promise = axios.delete('https://joes-autos.herokuapp.com/api/vehicles/'+ id)
+    promise.then(res => {
+      this.setState({
+        vehiclesToDisplay: res.data.vehicles
+      })
+    })
   }
 
   filterByMake() {
     let make = this.refs.selectedMake.value
     // axios (GET)
     // setState with response -> vehiclesToDisplay
+    let promise = axios.get(`https://joes-autos.herokuapp.com/api/vehicles?make=${make}`)
+    promise.then(res => {
+      this.setState({
+        vehiclesToDisplay: res.data
+      })
+    })
+
   }
 
   filterByColor() {
     let color = this.refs.selectedColor.value;
     // axios (GET)
     // setState with response -> vehiclesToDisplay
+    let promise = axios.get(`https://joes-autos.herokuapp.com/api/vehicles?color=${color}`)
+    promise.then(res => {
+      this.setState({
+        vehiclesToDisplay: res.data
+      })
+    })
   }
 
-  updatePrice(priceChange) {
+  updatePrice(priceChange,id) {
     // axios (PUT)
     // setState with response -> vehiclesToDisplay
+
+    let promise = axios.put(`https://joes-autos.herokuapp.com/api/vehicles/${id}/${priceChange}`)
+    promise.then(res => {
+      this.setState({
+        vehiclesToDisplay: res.data.vehicles
+      })
+    })
   }
 
   addCar(){
@@ -68,9 +106,15 @@ class App extends Component {
     color: this.refs.color.value,
     year: this.refs.year.value,
     price: this.refs.price.value
-  }  
+  }
   // axios (POST)
   // setState with response -> vehiclesToDisplay
+  let promise = axios.post('https://joes-autos.herokuapp.com/api/vehicles', newCar)
+    promise.then(res => {
+      this.setState({
+        vehiclesToDisplay: res.data.vehicles
+      })
+  })
 }
 
 addBuyer() {
@@ -81,18 +125,50 @@ addBuyer() {
   }
   //axios (POST)
   // setState with response -> buyersToDisplay
+  let promise = axios.post('https://joes-autos.herokuapp.com/api/buyers', newBuyer)
+    promise.then(res => {
+      this.setState({
+        buyersToDisplay: res.data.buyers
+      })
+    })
 }
 
 nameSearch() {
   // axios (GET)
   // setState with response -> buyersToDisplay
   let searchLetters = this.refs.searchLetters.value;
+  let promise = axios.get(`https://joes-autos.herokuapp.com/api/buyers?name=${searchLetters}`)
+  promise.then(res => {
+    this.setState({
+      buyersToDisplay : res.data
+    })
+  })
 }
 
 byYear() {
   let year = this.refs.searchYear.value;
   // axios (GET)
   // setState with response -> vehiclesToDisplay
+  let promise = axios.get(`https://joes-autos.herokuapp.com/api/vehicles?year=${year}`)
+  promise.then(res => {
+    this.setState({
+      vehiclesToDisplay: res.data
+    })
+  })
+}
+deleteBuyer(id) {
+  // let promise = axios.delete('https://joes-autos.herokuapp.com/api/vehicles/'+ id)
+  // promise.then(res => {
+  //   this.setState({
+  //     vehiclesToDisplay: res.data.vehicles
+  //   })
+  // })
+  let promise = axios.delete(`https://joes-autos.herokuapp.com/api/buyers/${id}`)
+  promise.then(res => {
+    this.setState({
+      buyersToDisplay: res.data.buyers
+    })
+  })
 }
 
 // ==============================================
@@ -126,18 +202,18 @@ resetData(dataToReset) {
           <p>Price: { v.price }</p>
           <button
             className='btn btn-sp'
-            onClick={ () => this.updatePrice('up') }
+            onClick={ () => this.updatePrice('up',v.id) }
             >Increase Price</button>
           <button
             className='btn btn-sp'
-            onClick={ () => this.updatePrice('down') }
-            >Decrease Price</button>  
-          <button 
+            onClick={ () => this.updatePrice('down',v.id) }
+            >Decrease Price</button>
+          <button
             className='btn btn-sp'
             onClick={ () => this.sellCar(v.id) }
             >SOLD!</button>
           <hr className='hr' />
-        </div> 
+        </div>
       )
     })
 
@@ -147,9 +223,9 @@ resetData(dataToReset) {
           <p>Name: {person.name}</p>
           <p>Phone: {person.phone}</p>
           <p>Address: {person.address}</p>
-          <button className='btn'>No longer interested</button>
+          <button className='btn' onClick={ () => this.deleteBuyer(person.id) }>No longer interested</button>
           <hr className='hr' />
-        </div> 
+        </div>
       )
     })
 
@@ -163,7 +239,7 @@ resetData(dataToReset) {
         </header>
         <div className='btn-container'>
           <button
-            className='btn-sp btn' 
+            className='btn-sp btn'
             onClick={ this.getVehicles }
             >Get All Vehicles</button>
           <select
@@ -180,8 +256,8 @@ resetData(dataToReset) {
             <option value="Cadillac">Cadillac</option>
             <option value="Dodge">Dodge</option>
             <option value="Chrysler">Chrysler</option>
-          </select>  
-          <select 
+          </select>
+          <select
             ref='selectedColor'
             onChange={ this.filterByColor }
             className='btn-sp'>
@@ -193,25 +269,25 @@ resetData(dataToReset) {
             <option value="violet">Violet</option>
             <option value="teal">Teal</option>
           </select>
-          <input 
-            onChange={ this.nameSearch } 
-            placeholder='Search by name' 
+          <input
+            onChange={ this.nameSearch }
+            placeholder='Search by name'
             type="text"
             ref='searchLetters'/>
-           <input 
+           <input
             ref='searchYear'
             className='btn-sp'
             type='number'
-            placeholder='Year'/> 
+            placeholder='Year'/>
           <button
             onClick={ this.byYear }
             className='btn-inp'>
-            Go</button>  
+            Go</button>
           <button
             className='btn-sp btn'
             onClick={ this.getPotentialBuyers }
             >Get Potential Buyers</button>
-        </div> 
+        </div>
 
         <br />
 
@@ -227,15 +303,15 @@ resetData(dataToReset) {
           <input className='btn-sp' placeholder='name' ref='name'/>
           <input className='btn-sp' placeholder='phone' ref='phone'/>
           <input className='btn-sp' placeholder='address' ref='address'/>
-          <button 
+          <button
             onClick={ this.addBuyer }
-            className='btn-sp btn' 
+            className='btn-sp btn'
             >Add buyer</button>
         </p>
-        
+
 
         <main className='main-wrapper'>
-          <section className='info-box'> 
+          <section className='info-box'>
             <h3>Inventory</h3>
 
             { vehicles }
@@ -247,10 +323,10 @@ resetData(dataToReset) {
             { buyers }
 
           </section>
-        </main>  
+        </main>
 
 
-      </div> 
+      </div>
     );
   }
 }
